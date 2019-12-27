@@ -143,6 +143,27 @@ public static function staticUpdateMethod(SimpleTile $tile){
 }
 ```
 
+For the last part, let's talk about how you can retrieve
+and modify the data stored in your tile. As of now there
+are only two methods allowing that, and they are pretty 
+self-explanatory after you see them:
+
+```php
+public static function staticUpdateMethod(SimpleTile $tile){
+    $id = $tile->getData("id", false);
+
+    if($id == false){
+        $tile->setData("id", "simpleTile");
+    }
+}
+```
+
+The first part of the code above will retrieve the 
+tile's `"id"` value every update, and if the value is 
+not found it will return `false`, since that is the default
+value. The second part of the code sets the tile's `"id"` 
+to `"simpleTile"` if the value equals to `false`.
+
 This is about it, hope this little guide helped you get
 started :D
 
