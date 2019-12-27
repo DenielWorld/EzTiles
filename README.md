@@ -129,17 +129,18 @@ new TileInfo(new Position(0, 0, 0), ["id" => "simpleTile", "randomInt" => 4], tr
 Now that you have created the tile and provided a method
 string of `staticUpdateMethod`, you have to create it IN
 your registrant class as a PUBLIC STATIC FUNCTION with SimpleTile
-as its one and only required argument.
+as its one and only required argument, and with a returnable
+bool. I am uncertain, but I believe that the returned bool
+will determine whether to continue updating the tile or not.
 
 This is what it would look like:
 
 ```php
-public static function staticUpdateMethod(SimpleTile $tile){
+public static function staticUpdateMethod(SimpleTile $tile) : bool {
     /*In here, insert the code that should be executed 
     with the $tile variable upon every update that 
     the tile has*/
-    //Note: updates will happen over and over if...
-    //... scheduled initially
+    //Note: don't forget to return true to continue updating, and return false to stop updating
 }
 ```
 
@@ -149,12 +150,14 @@ are only two methods allowing that, and they are pretty
 self-explanatory after you see them:
 
 ```php
-public static function staticUpdateMethod(SimpleTile $tile){
+public static function staticUpdateMethod(SimpleTile $tile) : bool {
     $id = $tile->getData("id", false);
 
     if($id == false){
         $tile->setData("id", "simpleTile");
     }
+
+    return true;
 }
 ```
 
@@ -162,7 +165,9 @@ The first part of the code above will retrieve the
 tile's `"id"` value every update, and if the value is 
 not found it will return `false`, since that is the default
 value. The second part of the code sets the tile's `"id"` 
-to `"simpleTile"` if the value equals to `false`.
+to `"simpleTile"` if the value equals to `false`. The third
+part of the code returns `true`, so the tile will continue
+to get updates.
 
 This is about it, hope this little guide helped you get
 started :D

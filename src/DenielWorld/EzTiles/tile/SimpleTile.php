@@ -165,8 +165,7 @@ class SimpleTile extends Spawnable{
         if($this->callable !== null) {
             $reflection = new \ReflectionClass(EzTiles::getRegistrant());
             $className = $reflection->getName();
-            call_user_func(array($className, $this->callable), $this);
-            return true;
+            return call_user_func(array($className, $this->callable), $this);
         }
         return false;
     }
