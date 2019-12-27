@@ -31,15 +31,36 @@ class SimpleTile extends Spawnable{
     /**
      * SimpleTile constructor.
      * @param Level $level
-     * @param TileInfo $tileInfo
+     * @param TileInfo|CompoundTag $tileInfo
      */
-    public function __construct(Level $level, TileInfo $tileInfo)
+    public function __construct(Level $level, $tileInfo)
     {
-        $nbt = new CompoundTag();
-        $this->parseToNbt($tileInfo->data, $nbt);
-        parent::__construct($level, $nbt);
-        if($tileInfo->scheduleUpdate and $tileInfo->callable !== null){
-            $this->scheduleUpdate();
+        if($tileInfo instanceof TileInfo) {
+            $nbt = new CompoundTag();
+
+            $nbt->setInt(self::TAG_X, $tileInfo->pos->x);
+            $nbt->setInt(self::TAG_Y, $tileInfo->pos->y);
+            $nbt->setInt(self::TAG_Z, $tileInfo->pos->z);
+
+            if (!isset($tileInfo->data["id"])) $nbt->setString("id", "simpleTile");
+            $this->callable = $tileInfo->callable;
+            $this->parseToNbt($tileInfo->data, $nbt);
+
+            parent::__construct($level, $nbt);
+
+            if ($tileInfo->scheduleUpdate and $this->callable !== null) {
+                $this->scheduleUpdate();
+            }
+        }
+        //Don't mind this, it is for tile recreation after restart which is no longer handled by you.
+        //I am unsure if this class will even be involved in the recreation, but let's include this just in case
+        if($tileInfo instanceof CompoundTag) {
+            parent::__construct($level, $tileInfo);
+
+            //Hopefully this is executed after the data was read
+            if ($this->callable !== null) {
+                $this->scheduleUpdate();
+            }
         }
     }
 
@@ -103,7 +124,7 @@ class SimpleTile extends Spawnable{
                 $tag = new IntTag($key, $value);
                 break;
             case self::TAG_BOOL:
-                $tag = new ByteTag($key, intval($value));
+                $tag = new ByteTag($key, (int)$value);
                 break;
             case self::TAG_SHORT:
                 $tag = new ShortTag($key, $value);
@@ -144,7 +165,7 @@ class SimpleTile extends Spawnable{
         if($this->callable !== null) {
             $reflection = new \ReflectionClass(EzTiles::getRegistrant());
             $className = $reflection->getName();
-            call_user_func([$className, $this->callable], $this);
+            call_user_func(array($className, $this->callable), $this);
             return true;
         }
         return false;
