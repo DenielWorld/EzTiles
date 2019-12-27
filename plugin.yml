@@ -1,0 +1,5 @@
+name: EzTiles
+main: DenielWorld\EzTiles\EzTiles
+api: 3.0.0
+version: 0.1.0
+description: "Tile creation & management made simple for beginner developers"
