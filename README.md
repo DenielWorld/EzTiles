@@ -1,8 +1,8 @@
-#EzTiles
+# EzTiles
 This plugin/virion has been created in
 order to help beginner developers create and manage their
 tiles easier.
-##Information
+## Information
 * This has been created by DenielWorld, who is mainly
 a developer of private plugins.
 * This was not yet tested, meaning that it might not work
@@ -21,7 +21,7 @@ below.
 in specific blocks, and with this plugin/virion, you can
 create your own tiles much easier than before!
 
-##How to use
+## How to use
 
 First of all, it is recommended to use this as a 
 virion, if you want your tiles to have custom 
@@ -149,7 +149,7 @@ started :D
 More tile possibilities & enhancements are planned in the
 future, but as of now I will remain silent about them.
 
-##Namespaces
+## Namespaces
 ```php
 use DenielWorld\EzTiles\EzTiles; //Main file for registration
 use DenielWorld\EzTiles\tile\SimpleTile; //The most basic and as of now the only custom tile that you can use
