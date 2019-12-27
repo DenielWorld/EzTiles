@@ -62,7 +62,7 @@ This was an overall explanation of how EzTiles work, if
 you want a deeper explanation, you may read ahead
 
 
-##Deeper Explanation
+## Deeper Explanation
 By now you know how to setup EzTiles as a virion and create
 the most basic tile, so now you will find out how to add
 functionality to your tile
