@@ -72,7 +72,8 @@ class SimpleTile extends Spawnable{
     public function parseToNbt(array $data, CompoundTag $nbt) : void{
         //TODO: Turn this into one big switch($this->>getTagType($value))
         foreach ($data as $key => $value){
-            if(is_object($value) or is_callable($value) or is_object($key) or is_callable($key)) {
+            if(is_int($key)) $key = (string)$key;
+            if(is_object($value) or is_callable($value)) {
                 throw new \InvalidArgumentException("Callable and objects cannot be saved to NBT");
             }
             elseif(is_int($value)) $nbt->setInt($key, $value);
@@ -207,7 +208,7 @@ class SimpleTile extends Spawnable{
      * These Ids are not used anywhere else :v
      */
     public function getTagType($key, $value) : int{
-        if(is_object($value) or is_callable($value) or is_object($key) or is_callable($key)) {
+        if(is_object($value) or is_callable($value)) {
             throw new \InvalidArgumentException("Callable and objects cannot be saved to NBT");
         }
         elseif(is_int($value)) return self::TAG_INT;
