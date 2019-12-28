@@ -26,7 +26,7 @@ class EzTiles extends PluginBase{
             }
 
             $this->getLogger()->info(
-                "You have enabled EzTiles as a plugin. Please keep in mind that EzTiles is recommended to be used as a virion."
+                "You have enabled EzTiles as a plugin. Please keep in mind that EzTiles should be used as a virion for more features."
             );
         }
     }
