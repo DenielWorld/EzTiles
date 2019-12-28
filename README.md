@@ -2,12 +2,35 @@
 This plugin/virion has been created in
 order to help beginner developers create and manage their
 tiles easier.
+
+## What are tiles?
+
+Tiles are basically block entities that pocketmine uses
+to save block relevant data. Just like items, they have
+an NBT which allows for effective data saving without having
+to use an external database.
+
+All data passed on to a tile is saved through restarts,
+meaning that when you restart your server, the tiles that
+have already been created will remain there, unless you
+`close()` them, which basically deletes them. This is why
+tiles are a preferred way to save block data.
+
+The point of this plugin/virion hybrid is to allow 
+for developers to create & manage tiles easier. Without
+this virion, tiles have to first be created as a custom
+class with some custom methods for saving tile data properly,
+and they also have to be initialized using NBT/CompoundTag.
+For a beginner developer, some of this stuff may be hard to
+understand, which is why I have created this virion to
+simplify the tile system for beginner developers.
+
 ## Information
-* This has been created by DenielWorld, who is mainly
+* This has been created by @DenielWorld, who is mainly
 a developer of private plugins.
-* This was not yet tested, meaning that it might not work
-at all or have some bugs, so feel free to open an issue
-if you feel like you found a bug.
+* This was tested by @Heisenburger69, and was said to be
+working just fine. Feel free to open an issue if you find
+a bug, or if you want to request a feature.
 * This is a tool for easier developing, not a functional 
 by itself plugin, so don't expect it to magically add the
 features you want.
@@ -17,9 +40,10 @@ updated, but I will not make any promises.
 * Lots of information can be found by reading the source
 code itself, if you feel like you won't need the documentation
 below.
-* Tiles are block entities that PM uses to store data
-in specific blocks, and with this plugin/virion, you can
-create your own tiles much easier than before!
+* This should be run as a virion, because as of now running
+this as a plugin will prevent you from using some of
+existent tile features. Although, this will be resolved
+soon :D
 
 ## How to use
 
