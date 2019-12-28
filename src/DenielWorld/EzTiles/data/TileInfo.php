@@ -25,9 +25,9 @@ class TileInfo{
      * @param array $data Insert any save data in here like this: [key => value] Objects stored in this array will not be saved.
      * Arrays must contain only one type of data, which can only be bool or int
      * @param bool $scheduleUpdate Should the tile be updated over time? If yes, a $callable method string is required
-     * @param string $callable Will only work if $scheduleUpdate is true, throws an exception otherwise
+     * @param string $callable Will only work if $scheduleUpdate is true, and is also required in that case
      */
-    public function __construct(Position $pos, array $data = ["id" => "simpleTile"], bool $scheduleUpdate = false, ?string $callable = null)
+    public function __construct(Position $pos, array $data = ["id" => "simpleTile"], bool $scheduleUpdate = false, string $callable = "")
     {
         $this->pos = $pos;
         $this->data = $data;

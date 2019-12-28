@@ -25,7 +25,7 @@ class SimpleTile extends Spawnable{
     /** @var CompoundTag */
     private $nbt;
 
-    /** @var string|null */
+    /** @var string */
     private $callable;
 
     /**
@@ -43,12 +43,12 @@ class SimpleTile extends Spawnable{
             $nbt->setInt(self::TAG_Z, $tileInfo->pos->z);
 
             if (!isset($tileInfo->data["id"])) $nbt->setString("id", "simpleTile");
-            $this->callable = $tileInfo->callable;
+            $nbt->setString("callable", $tileInfo->callable);
             $this->parseToNbt($tileInfo->data, $nbt);
 
             parent::__construct($level, $nbt);
 
-            if ($tileInfo->scheduleUpdate and $this->callable !== null) {
+            if ($tileInfo->scheduleUpdate and $this->callable !== "") {
                 $this->scheduleUpdate();
             }
         }
@@ -58,7 +58,7 @@ class SimpleTile extends Spawnable{
             parent::__construct($level, $tileInfo);
 
             //Hopefully this is executed after the data was read
-            if ($this->callable !== null) {
+            if ($this->callable !== "") {
                 $this->scheduleUpdate();
             }
         }
@@ -163,7 +163,7 @@ class SimpleTile extends Spawnable{
      */
     public function onUpdate(): bool
     {
-        if($this->callable !== null) {
+        if($this->callable !== "") {
             $reflection = new \ReflectionClass(EzTiles::getRegistrant());
             $className = $reflection->getName();
             return call_user_func(array($className, $this->callable), $this);
@@ -187,7 +187,7 @@ class SimpleTile extends Spawnable{
      */
     public function readSaveData(CompoundTag $nbt): void
     {
-        $this->callable = $nbt->getString("callable", null, true);
+        $this->callable = $nbt->getString("callable", "");
         $this->nbt = $nbt;
     }
 
