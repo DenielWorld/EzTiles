@@ -38,17 +38,19 @@ class SimpleTile extends Spawnable{
         if($tileInfo instanceof TileInfo) {
             $nbt = new CompoundTag();
 
-            $nbt->setInt(self::TAG_X, $tileInfo->pos->x);
-            $nbt->setInt(self::TAG_Y, $tileInfo->pos->y);
-            $nbt->setInt(self::TAG_Z, $tileInfo->pos->z);
+            $pos = $tileInfo->getPosition();
+            $nbt->setInt(self::TAG_X, $pos->x);
+            $nbt->setInt(self::TAG_Y, $pos->y);
+            $nbt->setInt(self::TAG_Z, $pos->z);
 
-            if (!isset($tileInfo->data["id"])) $nbt->setString("id", "simpleTile");
-            $nbt->setString("callable", $tileInfo->callable);
-            $this->parseToNbt($tileInfo->data, $nbt);
+            //TODO: Figure out if this even matters, since the "id" might be internal stuff that gets overwritten anyways
+            if ($tileInfo->getDataPiece("id") == null) $nbt->setString("id", "simpleTile");
+            $nbt->setString("callable", $tileInfo->getCallable());
+            $this->parseToNbt($tileInfo->getData(), $nbt);
 
             parent::__construct($level, $nbt);
 
-            if ($tileInfo->scheduleUpdate and $this->callable !== "") {
+            if ($tileInfo->isUpdateScheduled() and $this->callable !== "") {
                 $this->scheduleUpdate();
             }
         }
