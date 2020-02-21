@@ -17,6 +17,7 @@ use pocketmine\nbt\tag\ShortTag;
 use pocketmine\tile\Spawnable;
 
 //TODO: Organize Ids into order properly
+//TODO: Afaik custom tiles should extend Tile rather than Spawnable, because Spawnable is used for vanilla stuff
 class SimpleTile extends Spawnable{
 
     /** @var int */
@@ -55,7 +56,6 @@ class SimpleTile extends Spawnable{
             }
         }
         //Don't mind this, it is for tile recreation after restart which is no longer handled by you.
-        //I am unsure if this class will even be involved in the recreation, but let's include this just in case
         if($tileInfo instanceof CompoundTag) {
             parent::__construct($level, $tileInfo);
 
@@ -122,7 +122,7 @@ class SimpleTile extends Spawnable{
      * @param $value
      */
     public function setData(string $key, $value) : void{
-        switch ($this->getTagType($key, $value)){
+        switch ($this->getTagType($value)){
             case self::TAG_INT:
                 $tag = new IntTag($key, $value);
                 break;
@@ -209,7 +209,8 @@ class SimpleTile extends Spawnable{
      * @return int Id containing type of var, so it is properly converted into tag
      * These Ids are not used anywhere else :v
      */
-    public function getTagType($key, $value) : int{
+    public function getTagType($value) : int{
+        //TODO: Use switch()
         if(is_object($value) or is_callable($value)) {
             throw new \InvalidArgumentException("Callable and objects cannot be saved to NBT");
         }

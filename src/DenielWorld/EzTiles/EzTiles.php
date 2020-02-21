@@ -2,6 +2,7 @@
 
 namespace DenielWorld\EzTiles;
 
+use DenielWorld\EzTiles\tile\ContainerTile;
 use DenielWorld\EzTiles\tile\SimpleTile;
 use pocketmine\plugin\Plugin;
 use pocketmine\plugin\PluginBase;
@@ -48,6 +49,7 @@ class EzTiles extends PluginBase{
      */
     public static function init(bool $overwrite = false){
         Tile::registerTile(SimpleTile::class, ["simpleTile"]);
+        Tile::registerTile(ContainerTile::class, ["containerTile"]);
         //More tile types are planned to be added in the future
     }
 
