@@ -35,18 +35,15 @@ class TileInfo{
         $this->pos = $pos;
         $this->data = $data;
         $this->scheduleUpdate = $scheduleUpdate;
-
-        if($callable !== null){
-            if($scheduleUpdate){
-                $this->callable = $callable;
-            }
-            else {
-                $this->callable = null;
+        $this->callable = $callable;
+        if($callable !== ""){
+            if(!$scheduleUpdate){
+                $this->callable = "";
                 throw new \InvalidArgumentException("Cannot pass a callable method string if tile update is not scheduled");
             }
         }
         if($scheduleUpdate){
-            if($callable == null){
+            if($callable == ""){
                 $this->scheduleUpdate = false;
                 throw new \InvalidArgumentException("Cannot update tile without a callable method string");
             }
