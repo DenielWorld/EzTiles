@@ -14,6 +14,7 @@ use pocketmine\nbt\tag\IntArrayTag;
 use pocketmine\nbt\tag\IntTag;
 use pocketmine\nbt\tag\LongTag;
 use pocketmine\nbt\tag\ShortTag;
+use pocketmine\nbt\tag\StringTag;
 use pocketmine\tile\Spawnable;
 
 //TODO: Organize Ids into order properly
@@ -129,6 +130,9 @@ class SimpleTile extends Spawnable{
             case self::TAG_BOOL:
                 $tag = new ByteTag($key, (int)$value);
                 break;
+            case self::TAG_STRING:
+                $tag = new StringTag($key, $value);
+                break;
             case self::TAG_SHORT:
                 $tag = new ShortTag($key, $value);
                 break;
@@ -215,11 +219,11 @@ class SimpleTile extends Spawnable{
             throw new \InvalidArgumentException("Callable and objects cannot be saved to NBT");
         }
         elseif(is_int($value)) return self::TAG_INT;
-        elseif(is_string($value)) self::TAG_STRING;
-        elseif(is_bool($value)) self::TAG_BOOL;
-        elseif(is_long($value)) self::TAG_LONG;
-        elseif(is_double($value)) self::TAG_DOUBLE;
-        elseif(is_float($value)) self::TAG_FLOAT;
+        elseif(is_string($value)) return self::TAG_STRING;
+        elseif(is_bool($value)) return self::TAG_BOOL;
+        elseif(is_long($value)) return self::TAG_LONG;
+        elseif(is_double($value)) return self::TAG_DOUBLE;
+        elseif(is_float($value)) return self::TAG_FLOAT;
         //Since there is no method is_short, this type of tag will remain as the last possibility, but before is_array to avoid TAG_INVALID
         elseif(!is_array($value)) return self::TAG_SHORT;
         elseif(is_array($value)) return $this->getArrayType($value);
