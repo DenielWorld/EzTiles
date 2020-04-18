@@ -4,6 +4,7 @@ namespace DenielWorld\EzTiles\tile;
 
 use DenielWorld\EzTiles\data\TileInfo;
 use DenielWorld\EzTiles\EzTiles;
+use InvalidArgumentException;
 use pocketmine\level\Level;
 use pocketmine\nbt\tag\ByteArrayTag;
 use pocketmine\nbt\tag\ByteTag;
@@ -16,10 +17,13 @@ use pocketmine\nbt\tag\LongTag;
 use pocketmine\nbt\tag\ShortTag;
 use pocketmine\nbt\tag\StringTag;
 use pocketmine\tile\Spawnable;
+use ReflectionClass;
+use ReflectionException;
 
 //TODO: Organize Ids into order properly
 //TODO: Afaik custom tiles should extend Tile rather than Spawnable, because Spawnable is used for vanilla stuff
-class SimpleTile extends Spawnable{
+class SimpleTile extends Spawnable
+{
 
     /** @var int */
     public const TAG_INT = 0, TAG_BOOL = 1, TAG_INVALID = 2, TAG_STRING = 3, TAG_SHORT = 4, TAG_LONG = 5, TAG_DOUBLE = 6, TAG_FLOAT = 7, TAG_INT_ARRAY = 8, TAG_BOOL_ARRAY = 9;
@@ -58,6 +62,9 @@ class SimpleTile extends Spawnable{
         }
         //Don't mind this, it is for tile recreation after restart which is no longer handled by you.
         if($tileInfo instanceof CompoundTag) {
+
+            $level->loadChunk($this->x >> 4, $this->z >> 4); // fix unloaded chunk at 0 0 issue
+
             parent::__construct($level, $tileInfo);
 
             //Hopefully this is executed after the data was read
@@ -77,7 +84,7 @@ class SimpleTile extends Spawnable{
         foreach ($data as $key => $value){
             if(is_int($key)) $key = (string)$key;
             if(is_object($value) or is_callable($value)) {
-                throw new \InvalidArgumentException("Callable and objects cannot be saved to NBT");
+                throw new InvalidArgumentException("Callable and objects cannot be saved to NBT");
             }
             elseif(is_int($value)) $nbt->setInt($key, $value);
             elseif(is_string($value)) $nbt->setString($key, $value);
@@ -89,7 +96,7 @@ class SimpleTile extends Spawnable{
             elseif(is_array($value)){
                 switch ($this->getArrayType($value)){
                     case self::TAG_INVALID:
-                        throw new \InvalidArgumentException("Arrays can only contain one type of data, bool or int only");
+                        throw new InvalidArgumentException("Arrays can only contain one type of data, bool or int only");
                         break;
                     case self::TAG_BOOL_ARRAY:
                         $newValue = [];
@@ -156,7 +163,7 @@ class SimpleTile extends Spawnable{
                 $tag = new ByteArrayTag($key, (string)$value);
                 break;
             case self::TAG_INVALID:
-                throw new \InvalidArgumentException("Invalid tag provided");
+                throw new InvalidArgumentException("Invalid tag provided");
                 break;
         }
         if(isset($tag)) $this->nbt->setTag($tag);
@@ -165,12 +172,12 @@ class SimpleTile extends Spawnable{
     /**
      * Executed upon tile update, if it is scheduled & if a callable method string is provided
      * @return bool
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
     public function onUpdate(): bool
     {
         if($this->callable !== "") {
-            $reflection = new \ReflectionClass(EzTiles::getRegistrant());
+            $reflection = new ReflectionClass(EzTiles::getRegistrant());
             $className = $reflection->getName();
             return call_user_func(array($className, $this->callable), $this);
         }
@@ -216,7 +223,7 @@ class SimpleTile extends Spawnable{
     public function getTagType($value) : int{
         //TODO: Use switch()
         if(is_object($value) or is_callable($value)) {
-            throw new \InvalidArgumentException("Callable and objects cannot be saved to NBT");
+            throw new InvalidArgumentException("Callable and objects cannot be saved to NBT");
         }
         elseif(is_int($value)) return self::TAG_INT;
         elseif(is_string($value)) return self::TAG_STRING;
