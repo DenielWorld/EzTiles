@@ -4,7 +4,9 @@ namespace DenielWorld\EzTiles\tile;
 
 use DenielWorld\EzTiles\data\TileInfo;
 use DenielWorld\EzTiles\EzTiles;
-use pocketmine\level\Level;
+use DenielWorld\EzTiles\task\EzTileUpdateTask;
+use pocketmine\math\Vector3;
+use pocketmine\world\World;
 use pocketmine\nbt\tag\ByteArrayTag;
 use pocketmine\nbt\tag\ByteTag;
 use pocketmine\nbt\tag\CompoundTag;
@@ -15,7 +17,7 @@ use pocketmine\nbt\tag\IntTag;
 use pocketmine\nbt\tag\LongTag;
 use pocketmine\nbt\tag\ShortTag;
 use pocketmine\nbt\tag\StringTag;
-use pocketmine\tile\Spawnable;
+use pocketmine\block\tile\Spawnable;
 
 //TODO: Organize Ids into order properly
 //TODO: Afaik custom tiles should extend Tile rather than Spawnable, because Spawnable is used for vanilla stuff
@@ -25,17 +27,20 @@ class SimpleTile extends Spawnable{
     public const TAG_INT = 0, TAG_BOOL = 1, TAG_INVALID = 2, TAG_STRING = 3, TAG_SHORT = 4, TAG_LONG = 5, TAG_DOUBLE = 6, TAG_FLOAT = 7, TAG_INT_ARRAY = 8, TAG_BOOL_ARRAY = 9;
 
     /** @var CompoundTag */
-    private $nbt;
+    private CompoundTag $nbt;
 
     /** @var string */
-    private $callable;
+    private string $callable;
+
+    /** @var int */
+    private int $updateTicks;
 
     /**
      * SimpleTile constructor.
-     * @param Level $level
+     * @param World $level
      * @param TileInfo|CompoundTag $tileInfo
      */
-    public function __construct(Level $level, $tileInfo)
+    public function __construct(World $level, $tileInfo)
     {
         if($tileInfo instanceof TileInfo) {
             $nbt = new CompoundTag();
@@ -48,22 +53,20 @@ class SimpleTile extends Spawnable{
             //TODO: Figure out if this even matters, since the "id" might be internal stuff that gets overwritten anyways
             if ($tileInfo->getDataPiece("id") == null) $nbt->setString("id", "simpleTile");
             $nbt->setString("callable", $tileInfo->getCallable());
+            $this->callable = $tileInfo->getCallable();
+            $nbt->setInt("updateTicks", $tileInfo->getUpdateTicks());
+            $this->updateTicks = $tileInfo->getUpdateTicks();
             $this->parseToNbt($tileInfo->getData(), $nbt);
 
-            parent::__construct($level, $nbt);
+            parent::__construct($level, $tileInfo->getPosition());
 
             if ($tileInfo->isUpdateScheduled() and $this->callable !== "") {
-                $this->scheduleUpdate();
+                EzTiles::getRegistrant()->getScheduler()->scheduleDelayedRepeatingTask(new EzTileUpdateTask($this), $this->updateTicks, $this->updateTicks);
             }
         }
         //Don't mind this, it is for tile recreation after restart which is no longer handled by you.
-        if($tileInfo instanceof CompoundTag) {
+        if($tileInfo instanceof Vector3) {
             parent::__construct($level, $tileInfo);
-
-            //Hopefully this is executed after the data was read
-            if ($this->callable !== "") {
-                $this->scheduleUpdate();
-            }
         }
     }
 
@@ -90,13 +93,12 @@ class SimpleTile extends Spawnable{
                 switch ($this->getArrayType($value)){
                     case self::TAG_INVALID:
                         throw new \InvalidArgumentException("Arrays can only contain one type of data, bool or int only");
-                        break;
                     case self::TAG_BOOL_ARRAY:
                         $newValue = [];
                         foreach ($value as $bool){
                             $newValue[] = (int)$bool;
                         }
-                        $nbt->setByteArray($key, (string)$newValue);//TODO: Find out why a byte array accepts string as value, as of now it is uncertain what kind of behavior these arrays will have
+                        $nbt->setByteArray($key, serialize($newValue));//TODO: Find out why a byte array accepts string as value, as of now it is uncertain what kind of behavior these arrays will have
                         break;
                     case self::TAG_INT_ARRAY:
                         $nbt->setIntArray($key, $value);
@@ -108,10 +110,10 @@ class SimpleTile extends Spawnable{
     /**
      * Retrieves data from the saved NBT
      * @param string $key
-     * @param mixed $default
+     * @param mixed|null $default
      * @return mixed
      */
-    public function getData(string $key, $default = null){
+    public function getData(string $key, mixed $default = null): mixed{
         $data = $this->nbt->getTag($key);
         if($data == null) return $default;
         return $data;
@@ -125,41 +127,40 @@ class SimpleTile extends Spawnable{
     public function setData(string $key, $value) : void{
         switch ($this->getTagType($value)){
             case self::TAG_INT:
-                $tag = new IntTag($key, $value);
+                $tag = new IntTag($value);
                 break;
             case self::TAG_BOOL:
-                $tag = new ByteTag($key, (int)$value);
+                $tag = new ByteTag((int)$value);
                 break;
             case self::TAG_STRING:
-                $tag = new StringTag($key, $value);
+                $tag = new StringTag($value);
                 break;
             case self::TAG_SHORT:
-                $tag = new ShortTag($key, $value);
+                $tag = new ShortTag($value);
                 break;
             case self::TAG_LONG:
-                $tag = new LongTag($key, $value);
+                $tag = new LongTag($value);
                 break;
             case self::TAG_DOUBLE:
-                $tag = new DoubleTag($key, $value);
+                $tag = new DoubleTag($value);
                 break;
             case self::TAG_FLOAT:
-                $tag = new FloatTag($key, $value);
+                $tag = new FloatTag($value);
                 break;
             case self::TAG_INT_ARRAY:
-                $tag = new IntArrayTag($key, $value);
+                $tag = new IntArrayTag($value);
                 break;
             case self::TAG_BOOL_ARRAY:
                 $newValue = [];
                 foreach ($value as $bool){
                     $newValue[] = (int)$bool;
                 }
-                $tag = new ByteArrayTag($key, (string)$value);
+                $tag = new ByteArrayTag(serialize($newValue));
                 break;
             case self::TAG_INVALID:
                 throw new \InvalidArgumentException("Invalid tag provided");
-                break;
         }
-        if(isset($tag)) $this->nbt->setTag($tag);
+        if(isset($tag)) $this->nbt->setTag($key, $tag);
     }
 
     /**
@@ -182,10 +183,11 @@ class SimpleTile extends Spawnable{
      */
     public function writeSaveData(CompoundTag $nbt): void
     {
-        foreach($this->nbt->getValue() as $tag){
-            $nbt->setTag($tag);
+        foreach($this->nbt->getValue() as $name => $tag){
+            $nbt->setTag($name, $tag);
         }
         $nbt->setString("callable", $this->callable);
+        $nbt->setInt("updateTicks", $this->updateTicks);
     }
 
     /**
@@ -194,7 +196,10 @@ class SimpleTile extends Spawnable{
     public function readSaveData(CompoundTag $nbt): void
     {
         $this->callable = $nbt->getString("callable", "");
+        $this->updateTicks = $nbt->getInt("updateTicks", 1);
         $this->nbt = $nbt;
+
+        EzTiles::getRegistrant()->getScheduler()->scheduleDelayedRepeatingTask(new EzTileUpdateTask($this), $this->updateTicks, $this->updateTicks);
     }
 
     /**
@@ -202,13 +207,13 @@ class SimpleTile extends Spawnable{
      */
     public function addAdditionalSpawnData(CompoundTag $nbt): void
     {
-        foreach($this->nbt->getValue() as $tag){
-            $nbt->setTag($tag);
+        foreach($this->nbt->getValue() as $name => $tag){
+            $nbt->setTag($name, $tag);
         }
+        // Is this an unnecessary duplicate?
     }
 
     /**
-     * @param $key
      * @param $value
      * @return int Id containing type of var, so it is properly converted into tag
      * These Ids are not used anywhere else :v

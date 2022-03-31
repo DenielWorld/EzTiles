@@ -3,20 +3,21 @@
 namespace DenielWorld\EzTiles\inventory;
 
 use DenielWorld\EzTiles\tile\ContainerTile;
-use pocketmine\inventory\ContainerInventory;
+use pocketmine\block\inventory\ChestInventory;
 use pocketmine\network\mcpe\protocol\BlockEventPacket;
-use pocketmine\network\mcpe\protocol\LevelSoundEventPacket;
-use pocketmine\network\mcpe\protocol\types\WindowTypes;
-use pocketmine\Player;
+use pocketmine\network\mcpe\protocol\types\inventory\WindowTypes;
+use pocketmine\player\Player;
+use pocketmine\world\Position;
 
-class FakeChestInventory extends ContainerInventory {
+class FakeChestInventory extends ChestInventory {
 
     /** @var ContainerTile */
-    protected $holder;
+    protected ContainerTile $tile;
 
     public function __construct(ContainerTile $tile)
     {
-        parent::__construct($tile);
+        parent::__construct($tile->getPosition());
+        $this->tile = $tile;
     }
 
     /* Warning: All code below this point was taken out directly from ChestInventory::class, and is here as an example &...
@@ -45,24 +46,10 @@ class FakeChestInventory extends ContainerInventory {
 
     /**
      * This override is here for documentation and code completion purposes only.
-     * @return ContainerTile
+     * @return Position
      */
-    public function getHolder(){
+    public function getHolder() : Position{
         return $this->holder;
-    }
-
-    /**
-     * @return int
-     */
-    protected function getOpenSound() : int{
-        return LevelSoundEventPacket::SOUND_CHEST_OPEN;
-    }
-
-    /**
-     * @return int
-     */
-    protected function getCloseSound() : int{
-        return LevelSoundEventPacket::SOUND_CHEST_CLOSED;
     }
 
     /**
@@ -73,7 +60,7 @@ class FakeChestInventory extends ContainerInventory {
 
         if(count($this->getViewers()) === 1 and $this->getHolder()->isValid()){
             $this->broadcastBlockEventPacket(true);
-            $this->getHolder()->getLevel()->broadcastLevelSoundEvent($this->getHolder()->add(0.5, 0.5, 0.5), $this->getOpenSound());
+            $this->getHolder()->getWorld()->addSound($this->getHolder()->add(0.5, 0.5, 0.5), $this->getOpenSound());
         }
     }
 
@@ -83,7 +70,7 @@ class FakeChestInventory extends ContainerInventory {
     public function onClose(Player $who) : void{
         if(count($this->getViewers()) === 1 and $this->getHolder()->isValid()){
             $this->broadcastBlockEventPacket(false);
-            $this->getHolder()->getLevel()->broadcastLevelSoundEvent($this->getHolder()->add(0.5, 0.5, 0.5), $this->getCloseSound());
+            $this->getHolder()->getWorld()->addSound($this->getHolder()->add(0.5, 0.5, 0.5), $this->getCloseSound());
         }
         parent::onClose($who);
     }
@@ -100,7 +87,7 @@ class FakeChestInventory extends ContainerInventory {
         $pk->z = (int) $holder->z;
         $pk->eventType = 1; //it's always 1 for a chest
         $pk->eventData = $isOpen ? 1 : 0;
-        $holder->getLevel()->broadcastPacketToViewers($holder, $pk);
+        $holder->getWorld()->broadcastPacketToViewers($holder, $pk);
     }
 
 }

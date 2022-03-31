@@ -2,22 +2,25 @@
 
 namespace DenielWorld\EzTiles\data;
 
-use pocketmine\level\Position;
+use pocketmine\world\Position;
 
 /** Data storage for any tile registered in EzTiles::init() */
 class TileInfo{
 
     /** @var Position */
-    private $pos;
+    private Position $pos;
 
     /** @var array */
-    private $data;
+    private array $data;
 
     /** @var bool */
-    private $scheduleUpdate;
+    private bool $scheduleUpdate;
 
     /** @var string */
-    private $callable;
+    private string $callable;
+
+    /** @var int */
+    private int $updateTicks;
 
     /**
      * TileInfo constructor.
@@ -29,13 +32,15 @@ class TileInfo{
      * Keys should only be strings, because that is how NBT interprets them.
      * @param bool $scheduleUpdate Should the tile be updated over time? If yes, a $callable method string is required
      * @param string $callable Will only work if $scheduleUpdate is true, and is also required in that case
+     * @param int $updateTicks Specifies every how many ticks the tile should run a scheduled update.
      */
-    public function __construct(Position $pos, array $data = ["id" => "simpleTile"], bool $scheduleUpdate = false, string $callable = "")
+    public function __construct(Position $pos, array $data = ["id" => "simpleTile"], bool $scheduleUpdate = false, string $callable = "", int $updateTicks = 1)
     {
         $this->pos = $pos;
         $this->data = $data;
         $this->scheduleUpdate = $scheduleUpdate;
         $this->callable = $callable;
+        $this->updateTicks = $updateTicks;
         if($callable !== ""){
             if(!$scheduleUpdate){
                 $this->callable = "";
@@ -69,7 +74,7 @@ class TileInfo{
      * @param string $key
      * @return mixed
      */
-    public function getDataPiece(string $key){
+    public function getDataPiece(string $key) : mixed{
         if(isset($this->data[$key])) return $this->data[$key];
         return null;
     }
@@ -86,6 +91,13 @@ class TileInfo{
      */
     public function getCallable() : string{
         return $this->callable;
+    }
+
+    /**
+     * @return int how often the tile update should be executed
+     */
+    public function getUpdateTicks(): int{
+        return $this->updateTicks;
     }
 
 }

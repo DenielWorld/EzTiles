@@ -4,19 +4,19 @@ namespace DenielWorld\EzTiles;
 
 use DenielWorld\EzTiles\tile\ContainerTile;
 use DenielWorld\EzTiles\tile\SimpleTile;
+use pocketmine\block\tile\TileFactory;
 use pocketmine\plugin\Plugin;
 use pocketmine\plugin\PluginBase;
-use pocketmine\tile\Tile;
 
 class EzTiles extends PluginBase{
 
     /** @var Plugin|null */
-    protected static $registrant = null;
+    protected static ?Plugin $registrant = null;
 
     /** @var bool */
-    protected $loggerEnabled = true;
+    protected bool $loggerEnabled = true;
 
-    public function onEnable()
+    public function onEnable() : void
     {
         if($this->loggerEnabled and self::$registrant == null) {
             self::$registrant = $this;
@@ -45,11 +45,10 @@ class EzTiles extends PluginBase{
      * Registers all existing custom tiles,
      * This has to be executed manually if you use this as a virion
      * @param bool $overwrite
-     * @throws \ReflectionException
      */
     public static function init(bool $overwrite = false){
-        Tile::registerTile(SimpleTile::class, ["simpleTile"]);
-        Tile::registerTile(ContainerTile::class, ["containerTile"]);
+        TileFactory::getInstance()->register(SimpleTile::class, ["simpleTile"]);
+        TileFactory::getInstance()->register(ContainerTile::class, ["containerTile"]);
         //More tile types are planned to be added in the future
     }
 
@@ -71,7 +70,7 @@ class EzTiles extends PluginBase{
         return self::$registrant;
     }
 
-    public function onDisable()
+    public function onDisable() : void
     {
         if($this->loggerEnabled and self::$registrant == null) $this->getLogger()->info("EzTiles has been disabled.");
     }
